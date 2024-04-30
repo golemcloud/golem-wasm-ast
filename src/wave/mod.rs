@@ -119,20 +119,13 @@ impl WasmFunc for AnalysedFunction {
     }
 
     fn results(&self) -> Box<dyn Iterator<Item = Self::Type> + '_> {
-        Box::new(self.results.iter().map(|r| r.typ.clone()))
+        let result = self.results.types().into_iter().cloned();
+
+        Box::new(result.into_iter())
     }
 
     fn result_names(&self) -> Box<dyn Iterator<Item = Cow<str>> + '_> {
-        let names: Option<Vec<Cow<str>>> = self
-            .results
-            .iter()
-            .map(|r| r.name.as_ref().map(|n| Cow::Borrowed(n.as_str())))
-            .collect();
-
-        match names {
-            Some(names) => Box::new(names.into_iter()),
-            None => Box::new(std::iter::empty()),
-        }
+        Box::new(self.results.names().into_iter().map(Cow::Borrowed))
     }
 }
 

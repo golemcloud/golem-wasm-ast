@@ -30,7 +30,7 @@ pub enum AnalysedExport {
 pub struct AnalysedFunction {
     pub name: String,
     pub params: Vec<AnalysedFunctionParameter>,
-    pub results: Vec<AnalysedFunctionResult>,
+    pub results: AnalysedFunctionResults,
 }
 
 impl AnalysedFunction {
@@ -38,7 +38,7 @@ impl AnalysedFunction {
         self.name.starts_with("[constructor]")
             && self.results.len() == 1
             && matches!(
-                &self.results[0].typ,
+                &self.results.get_typ(0).unwrap(),
                 AnalysedType::Resource {
                     resource_mode: AnalysedResourceMode::Owned,
                     ..
@@ -139,8 +139,61 @@ pub struct AnalysedFunctionParameter {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AnalysedFunctionResult {
-    pub name: Option<String>,
+pub enum AnalysedFunctionResults {
+    Named(Vec<NamedFunctionResult>),
+    Unnamed(AnalysedType),
+    Unit,
+}
+
+impl AnalysedFunctionResults {
+    pub fn types(&self) -> Vec<&AnalysedType> {
+        match self {
+            AnalysedFunctionResults::Named(results) => results.iter().map(|r| &r.typ).collect(),
+            AnalysedFunctionResults::Unnamed(result) => vec![result],
+            AnalysedFunctionResults::Unit => vec![],
+        }
+    }
+
+    pub fn names(&self) -> Vec<&str> {
+        match self {
+            AnalysedFunctionResults::Named(results) => {
+                results.iter().map(|r| r.name.as_str()).collect()
+            }
+            AnalysedFunctionResults::Unnamed(_) => vec![],
+            AnalysedFunctionResults::Unit => vec![],
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            AnalysedFunctionResults::Named(results) => results.len(),
+            AnalysedFunctionResults::Unnamed(_) => 1,
+            AnalysedFunctionResults::Unit => 0,
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    pub fn get_typ(&self, idx: usize) -> Option<&AnalysedType> {
+        match self {
+            AnalysedFunctionResults::Named(results) => results.get(idx).map(|x| &x.typ),
+            AnalysedFunctionResults::Unnamed(typ) => {
+                if idx == 0 {
+                    Some(typ)
+                } else {
+                    None
+                }
+            }
+            AnalysedFunctionResults::Unit => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NamedFunctionResult {
+    pub name: String,
     pub typ: AnalysedType,
 }
 
@@ -314,28 +367,33 @@ impl<Ast: AstCustomization + 'static> AnalysisContext<Ast> {
             })
         }
 
-        let mut results: Vec<AnalysedFunctionResult> = Vec::new();
-        match &func_type.result {
+        let analysed_function_results = match &func_type.result {
             ComponentFuncResult::Unnamed(tpe) => {
-                results.push(AnalysedFunctionResult {
-                    name: None,
-                    typ: self.analyse_component_val_type(tpe)?,
-                });
+                AnalysedFunctionResults::Unnamed(self.analyse_component_val_type(tpe)?)
             }
+
+            ComponentFuncResult::Named(name_type_pairs) if name_type_pairs.is_empty() => {
+                AnalysedFunctionResults::Unit
+            }
+
             ComponentFuncResult::Named(name_type_pairs) => {
+                let mut results: Vec<NamedFunctionResult> = Vec::new();
+
                 for (result_name, result_type) in name_type_pairs {
-                    results.push(AnalysedFunctionResult {
-                        name: Some(result_name.clone()),
+                    results.push(NamedFunctionResult {
+                        name: result_name.clone(),
                         typ: self.analyse_component_val_type(result_type)?,
                     })
                 }
+
+                AnalysedFunctionResults::Named(results)
             }
-        }
+        };
 
         Ok(AnalysedFunction {
             name,
             params,
-            results,
+            results: analysed_function_results,
         })
     }
 
@@ -706,7 +764,7 @@ impl<Ast: AstCustomization + 'static> AnalysisContext<Ast> {
 #[cfg(test)]
 mod tests {
     use crate::analysis::{
-        AnalysedFunction, AnalysedFunctionParameter, AnalysedFunctionResult, AnalysedResourceId,
+        AnalysedFunction, AnalysedFunctionParameter, AnalysedFunctionResults, AnalysedResourceId,
         AnalysedResourceMode, AnalysedType,
     };
 
@@ -718,14 +776,12 @@ mod tests {
                 name: "user-id".to_string(),
                 typ: AnalysedType::Str,
             }],
-            results: vec![AnalysedFunctionResult {
-                name: None,
-                typ: AnalysedType::Resource {
-                    id: AnalysedResourceId { value: 0 },
-                    resource_mode: AnalysedResourceMode::Owned,
-                },
-            }],
+            results: AnalysedFunctionResults::Unnamed(AnalysedType::Resource {
+                id: AnalysedResourceId { value: 0 },
+                resource_mode: AnalysedResourceMode::Owned,
+            }),
         };
+
         let method = AnalysedFunction {
             name: "[method]cart.add-item".to_string(),
             params: vec![
@@ -746,7 +802,7 @@ mod tests {
                     ]),
                 },
             ],
-            results: vec![],
+            results: AnalysedFunctionResults::Unit,
         };
         let static_method = AnalysedFunction {
             name: "[static]cart.merge".to_string(),
@@ -766,13 +822,10 @@ mod tests {
                     },
                 },
             ],
-            results: vec![AnalysedFunctionResult {
-                name: None,
-                typ: AnalysedType::Resource {
-                    id: AnalysedResourceId { value: 0 },
-                    resource_mode: AnalysedResourceMode::Owned,
-                },
-            }],
+            results: AnalysedFunctionResults::Unnamed(AnalysedType::Resource {
+                id: AnalysedResourceId { value: 0 },
+                resource_mode: AnalysedResourceMode::Owned,
+            }),
         };
         let fun = AnalysedFunction {
             name: "hash".to_string(),
@@ -780,16 +833,13 @@ mod tests {
                 name: "path".to_string(),
                 typ: AnalysedType::Str,
             }],
-            results: vec![AnalysedFunctionResult {
-                name: None,
-                typ: AnalysedType::Result {
-                    ok: Some(Box::new(AnalysedType::Record(vec![
-                        ("lower".to_string(), AnalysedType::U64),
-                        ("upper".to_string(), AnalysedType::U64),
-                    ]))),
-                    error: Some(Box::new(AnalysedType::Str)),
-                },
-            }],
+            results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                ok: Some(Box::new(AnalysedType::Record(vec![
+                    ("lower".to_string(), AnalysedType::U64),
+                    ("upper".to_string(), AnalysedType::U64),
+                ]))),
+                error: Some(Box::new(AnalysedType::Str)),
+            }),
         };
 
         assert!(cons.is_constructor());

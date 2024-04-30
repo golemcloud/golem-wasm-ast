@@ -1,5 +1,5 @@
 use golem_wasm_ast::analysis::{
-    AnalysedExport, AnalysedFunction, AnalysedFunctionParameter, AnalysedFunctionResult,
+    AnalysedExport, AnalysedFunction, AnalysedFunctionParameter, AnalysedFunctionResults,
     AnalysedInstance, AnalysedResourceId, AnalysedResourceMode, AnalysedType, AnalysisContext,
 };
 use golem_wasm_ast::component::Component;
@@ -22,7 +22,7 @@ fn exports_shopping_cart_component() {
                     name: "user-id".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "add-item".to_string(),
@@ -35,7 +35,7 @@ fn exports_shopping_cart_component() {
                         ("quantity".to_string(), AnalysedType::U32),
                     ]),
                 }],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "remove-item".to_string(),
@@ -43,7 +43,7 @@ fn exports_shopping_cart_component() {
                     name: "product-id".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "update-item-quantity".to_string(),
@@ -57,37 +57,33 @@ fn exports_shopping_cart_component() {
                         typ: AnalysedType::U32,
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "checkout".to_string(),
                 params: vec![],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Variant(vec![
-                        ("error".to_string(), Some(AnalysedType::Str)),
-                        (
-                            "success".to_string(),
-                            Some(AnalysedType::Record(vec![(
-                                "order-id".to_string(),
-                                AnalysedType::Str,
-                            )])),
-                        ),
-                    ]),
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Variant(vec![
+                    ("error".to_string(), Some(AnalysedType::Str)),
+                    (
+                        "success".to_string(),
+                        Some(AnalysedType::Record(vec![(
+                            "order-id".to_string(),
+                            AnalysedType::Str,
+                        )])),
+                    ),
+                ])),
             },
             AnalysedFunction {
                 name: "get-cart-contents".to_string(),
                 params: vec![],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::List(Box::new(AnalysedType::Record(vec![
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::List(Box::new(
+                    AnalysedType::Record(vec![
                         ("product-id".to_string(), AnalysedType::Str),
                         ("name".to_string(), AnalysedType::Str),
                         ("price".to_string(), AnalysedType::F32),
                         ("quantity".to_string(), AnalysedType::U32),
-                    ]))),
-                }],
+                    ]),
+                ))),
             },
         ],
     })];
@@ -112,13 +108,10 @@ fn exports_file_service_component() {
                     name: "path".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: Some(Box::new(AnalysedType::Str)),
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: Some(Box::new(AnalysedType::Str)),
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "write-file".to_string(),
@@ -132,13 +125,10 @@ fn exports_file_service_component() {
                         typ: AnalysedType::Str,
                     },
                 ],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "write-file-direct".to_string(),
@@ -152,13 +142,10 @@ fn exports_file_service_component() {
                         typ: AnalysedType::Str,
                     },
                 ],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "delete-file".to_string(),
@@ -166,13 +153,10 @@ fn exports_file_service_component() {
                     name: "path".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "get-file-info".to_string(),
@@ -180,28 +164,25 @@ fn exports_file_service_component() {
                     name: "path".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: Some(Box::new(AnalysedType::Record(vec![
-                            (
-                                "last-modified".to_string(),
-                                AnalysedType::Record(vec![
-                                    ("seconds".to_string(), AnalysedType::U64),
-                                    ("nanoseconds".to_string(), AnalysedType::U32),
-                                ]),
-                            ),
-                            (
-                                "last-accessed".to_string(),
-                                AnalysedType::Record(vec![
-                                    ("seconds".to_string(), AnalysedType::U64),
-                                    ("nanoseconds".to_string(), AnalysedType::U32),
-                                ]),
-                            ),
-                        ]))),
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: Some(Box::new(AnalysedType::Record(vec![
+                        (
+                            "last-modified".to_string(),
+                            AnalysedType::Record(vec![
+                                ("seconds".to_string(), AnalysedType::U64),
+                                ("nanoseconds".to_string(), AnalysedType::U32),
+                            ]),
+                        ),
+                        (
+                            "last-accessed".to_string(),
+                            AnalysedType::Record(vec![
+                                ("seconds".to_string(), AnalysedType::U64),
+                                ("nanoseconds".to_string(), AnalysedType::U32),
+                            ]),
+                        ),
+                    ]))),
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "get-info".to_string(),
@@ -209,28 +190,25 @@ fn exports_file_service_component() {
                     name: "path".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: Some(Box::new(AnalysedType::Record(vec![
-                            (
-                                "last-modified".to_string(),
-                                AnalysedType::Record(vec![
-                                    ("seconds".to_string(), AnalysedType::U64),
-                                    ("nanoseconds".to_string(), AnalysedType::U32),
-                                ]),
-                            ),
-                            (
-                                "last-accessed".to_string(),
-                                AnalysedType::Record(vec![
-                                    ("seconds".to_string(), AnalysedType::U64),
-                                    ("nanoseconds".to_string(), AnalysedType::U32),
-                                ]),
-                            ),
-                        ]))),
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: Some(Box::new(AnalysedType::Record(vec![
+                        (
+                            "last-modified".to_string(),
+                            AnalysedType::Record(vec![
+                                ("seconds".to_string(), AnalysedType::U64),
+                                ("nanoseconds".to_string(), AnalysedType::U32),
+                            ]),
+                        ),
+                        (
+                            "last-accessed".to_string(),
+                            AnalysedType::Record(vec![
+                                ("seconds".to_string(), AnalysedType::U64),
+                                ("nanoseconds".to_string(), AnalysedType::U32),
+                            ]),
+                        ),
+                    ]))),
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "create-directory".to_string(),
@@ -238,13 +216,10 @@ fn exports_file_service_component() {
                     name: "path".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "create-link".to_string(),
@@ -258,13 +233,10 @@ fn exports_file_service_component() {
                         typ: AnalysedType::Str,
                     },
                 ],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "create-sym-link".to_string(),
@@ -278,13 +250,10 @@ fn exports_file_service_component() {
                         typ: AnalysedType::Str,
                     },
                 ],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "remove-directory".to_string(),
@@ -292,13 +261,10 @@ fn exports_file_service_component() {
                     name: "path".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "remove-file".to_string(),
@@ -306,13 +272,10 @@ fn exports_file_service_component() {
                     name: "path".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "rename-file".to_string(),
@@ -326,13 +289,10 @@ fn exports_file_service_component() {
                         typ: AnalysedType::Str,
                     },
                 ],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: None,
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: None,
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
             AnalysedFunction {
                 name: "hash".to_string(),
@@ -340,16 +300,13 @@ fn exports_file_service_component() {
                     name: "path".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Result {
-                        ok: Some(Box::new(AnalysedType::Record(vec![
-                            ("lower".to_string(), AnalysedType::U64),
-                            ("upper".to_string(), AnalysedType::U64),
-                        ]))),
-                        error: Some(Box::new(AnalysedType::Str)),
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Result {
+                    ok: Some(Box::new(AnalysedType::Record(vec![
+                        ("lower".to_string(), AnalysedType::U64),
+                        ("upper".to_string(), AnalysedType::U64),
+                    ]))),
+                    error: Some(Box::new(AnalysedType::Str)),
+                }),
             },
         ],
     })];
@@ -385,13 +342,10 @@ fn exports_auction_registry_composed_component() {
                             typ: AnalysedType::Str,
                         },
                     ],
-                    results: vec![AnalysedFunctionResult {
-                        name: None,
-                        typ: AnalysedType::Record(vec![(
-                            "bidder-id".to_string(),
-                            AnalysedType::Str
-                        )]),
-                    }],
+                    results: AnalysedFunctionResults::Unnamed(AnalysedType::Record(vec![(
+                        "bidder-id".to_string(),
+                        AnalysedType::Str
+                    )]))
                 },
                 AnalysedFunction {
                     name: "create-auction".to_string(),
@@ -413,20 +367,16 @@ fn exports_auction_registry_composed_component() {
                             typ: AnalysedType::U64,
                         },
                     ],
-                    results: vec![AnalysedFunctionResult {
-                        name: None,
-                        typ: AnalysedType::Record(vec![(
-                            "auction-id".to_string(),
-                            AnalysedType::Str
-                        )]),
-                    }],
+                    results: AnalysedFunctionResults::Unnamed(AnalysedType::Record(vec![(
+                        "auction-id".to_string(),
+                        AnalysedType::Str
+                    )]))
                 },
                 AnalysedFunction {
                     name: "get-auctions".to_string(),
                     params: vec![],
-                    results: vec![AnalysedFunctionResult {
-                        name: None,
-                        typ: AnalysedType::List(Box::new(AnalysedType::Record(vec![
+                    results: AnalysedFunctionResults::Unnamed(AnalysedType::List(Box::new(
+                        AnalysedType::Record(vec![
                             (
                                 "auction-id".to_string(),
                                 AnalysedType::Record(vec![(
@@ -438,8 +388,8 @@ fn exports_auction_registry_composed_component() {
                             ("description".to_string(), AnalysedType::Str),
                             ("limit-price".to_string(), AnalysedType::F32),
                             ("expiration".to_string(), AnalysedType::U64),
-                        ]))),
-                    }],
+                        ])
+                    )))
                 },
             ],
         })]
@@ -463,13 +413,10 @@ fn exports_shopping_cart_resource_component() {
                     name: "user-id".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Resource {
-                        id: AnalysedResourceId { value: 0 },
-                        resource_mode: AnalysedResourceMode::Owned,
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Resource {
+                    id: AnalysedResourceId { value: 0 },
+                    resource_mode: AnalysedResourceMode::Owned,
+                }),
             },
             AnalysedFunction {
                 name: "[method]cart.add-item".to_string(),
@@ -491,7 +438,7 @@ fn exports_shopping_cart_resource_component() {
                         ]),
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "[method]cart.remove-item".to_string(),
@@ -508,7 +455,7 @@ fn exports_shopping_cart_resource_component() {
                         typ: AnalysedType::Str,
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "[method]cart.update-item-quantity".to_string(),
@@ -529,7 +476,7 @@ fn exports_shopping_cart_resource_component() {
                         typ: AnalysedType::U32,
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "[method]cart.checkout".to_string(),
@@ -540,19 +487,16 @@ fn exports_shopping_cart_resource_component() {
                         resource_mode: AnalysedResourceMode::Borrowed,
                     },
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Variant(vec![
-                        ("error".to_string(), Some(AnalysedType::Str)),
-                        (
-                            "success".to_string(),
-                            Some(AnalysedType::Record(vec![(
-                                "order-id".to_string(),
-                                AnalysedType::Str,
-                            )])),
-                        ),
-                    ]),
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Variant(vec![
+                    ("error".to_string(), Some(AnalysedType::Str)),
+                    (
+                        "success".to_string(),
+                        Some(AnalysedType::Record(vec![(
+                            "order-id".to_string(),
+                            AnalysedType::Str,
+                        )])),
+                    ),
+                ])),
             },
             AnalysedFunction {
                 name: "[method]cart.get-cart-contents".to_string(),
@@ -563,15 +507,14 @@ fn exports_shopping_cart_resource_component() {
                         resource_mode: AnalysedResourceMode::Borrowed,
                     },
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::List(Box::new(AnalysedType::Record(vec![
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::List(Box::new(
+                    AnalysedType::Record(vec![
                         ("product-id".to_string(), AnalysedType::Str),
                         ("name".to_string(), AnalysedType::Str),
                         ("price".to_string(), AnalysedType::F32),
                         ("quantity".to_string(), AnalysedType::U32),
-                    ]))),
-                }],
+                    ]),
+                ))),
             },
             AnalysedFunction {
                 name: "[method]cart.merge-with".to_string(),
@@ -591,7 +534,7 @@ fn exports_shopping_cart_resource_component() {
                         },
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
         ],
     })];
@@ -616,13 +559,10 @@ fn exports_shopping_cart_resource_versioned_component() {
                     name: "user-id".to_string(),
                     typ: AnalysedType::Str,
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Resource {
-                        id: AnalysedResourceId { value: 0 },
-                        resource_mode: AnalysedResourceMode::Owned,
-                    },
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Resource {
+                    id: AnalysedResourceId { value: 0 },
+                    resource_mode: AnalysedResourceMode::Owned,
+                }),
             },
             AnalysedFunction {
                 name: "[method]cart.add-item".to_string(),
@@ -644,7 +584,7 @@ fn exports_shopping_cart_resource_versioned_component() {
                         ]),
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "[method]cart.remove-item".to_string(),
@@ -661,7 +601,7 @@ fn exports_shopping_cart_resource_versioned_component() {
                         typ: AnalysedType::Str,
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "[method]cart.update-item-quantity".to_string(),
@@ -682,7 +622,7 @@ fn exports_shopping_cart_resource_versioned_component() {
                         typ: AnalysedType::U32,
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
             AnalysedFunction {
                 name: "[method]cart.checkout".to_string(),
@@ -693,19 +633,16 @@ fn exports_shopping_cart_resource_versioned_component() {
                         resource_mode: AnalysedResourceMode::Borrowed,
                     },
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::Variant(vec![
-                        ("error".to_string(), Some(AnalysedType::Str)),
-                        (
-                            "success".to_string(),
-                            Some(AnalysedType::Record(vec![(
-                                "order-id".to_string(),
-                                AnalysedType::Str,
-                            )])),
-                        ),
-                    ]),
-                }],
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::Variant(vec![
+                    ("error".to_string(), Some(AnalysedType::Str)),
+                    (
+                        "success".to_string(),
+                        Some(AnalysedType::Record(vec![(
+                            "order-id".to_string(),
+                            AnalysedType::Str,
+                        )])),
+                    ),
+                ])),
             },
             AnalysedFunction {
                 name: "[method]cart.get-cart-contents".to_string(),
@@ -716,15 +653,14 @@ fn exports_shopping_cart_resource_versioned_component() {
                         resource_mode: AnalysedResourceMode::Borrowed,
                     },
                 }],
-                results: vec![AnalysedFunctionResult {
-                    name: None,
-                    typ: AnalysedType::List(Box::new(AnalysedType::Record(vec![
+                results: AnalysedFunctionResults::Unnamed(AnalysedType::List(Box::new(
+                    AnalysedType::Record(vec![
                         ("product-id".to_string(), AnalysedType::Str),
                         ("name".to_string(), AnalysedType::Str),
                         ("price".to_string(), AnalysedType::F32),
                         ("quantity".to_string(), AnalysedType::U32),
-                    ]))),
-                }],
+                    ]),
+                ))),
             },
             AnalysedFunction {
                 name: "[method]cart.merge-with".to_string(),
@@ -744,7 +680,7 @@ fn exports_shopping_cart_resource_versioned_component() {
                         },
                     },
                 ],
-                results: vec![],
+                results: AnalysedFunctionResults::Unit,
             },
         ],
     })];
