@@ -1,4 +1,7 @@
+**MERGED TO THE https://github.com/golemcloud/golem/ REPOSITORY**
+
 # golem-wasm-ast
+
 <p>
     <a href="https://crates.io/crates/golem-wasm-ast">
         <img src="https://img.shields.io/crates/v/golem-wasm-ast.svg" alt="Crate"/>
